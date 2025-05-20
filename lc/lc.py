@@ -1,4 +1,6 @@
 from typing import List, Optional
+from collections import defaultdict
+
 
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
@@ -432,8 +434,244 @@ class Solution:
         return dfs(root)
 
 
-                
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        self.k = k
+        self.res = None
+        def dfs(node):
+            if node is None:
+                return 
+            dfs(node.left)
+            if self.k == 0: return
+            self.k -= 1
+            if self.k == 0: 
+                self.res = node.val
+            dfs(node.right)
+        dfs(root)
+        return self.res
 
+                
+    def rightSideView(self, root: Optional[TreeNode]) -> List[int]:
+        map = {}
+        queue = [(root, 0)]
+        max_depth = -1
+        while queue:
+            node, depth = queue.pop(0)
+            if node:
+                max_depth = max(max_depth, depth)
+                map[max_depth] = node.val
+                queue.append((node.left, depth + 1))
+                queue.append((node.right, depth + 1))
+        return [map[i] for i in range(max_depth + 1)]
+    
+    
+    def flatten(self, root: Optional[TreeNode]) -> None:
+        """
+        Do not return anything, modify root in-place instead.
+        """
+        cur = root
+        while cur:
+            if cur.left:
+                pre = nxt = cur.left
+                while pre.right:
+                    pre = pre.right
+                pre.right = cur.right
+                cur.left = None 
+                cur.right = nxt 
+            cur = cur.right
+    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:
+        dic = {}
+        for i in range(len(inorder)):
+            dic[inorder[i]] = i
+        def dfs(root, left, right):
+            if left > right:
+                return 
+            root_idx = dic[preorder[root]]
+            node = TreeNode(preorder[root])
+            node.left = dfs(root + 1, left, root_idx - 1)
+            node.right = dfs(root + (root_idx - left + 1), root_idx + 1, right)
+            return node
+        return dfs(0, 0, len(inorder) - 1)
+
+    def pathSum(self, root: Optional[TreeNode], targetSum: int) -> int:
+        ans = 0 
+        cnt = defaultdict(int)
+        cnt[0] = 1
+        def dfs(node, cur):
+            if node is None:
+                return 
+            nonlocal ans
+            cur += node.val
+            ans += cnt[cur - targetSum]
+            cnt[cur] += 1
+            dfs(node.left, cur)
+            dfs(node.right, cur)
+            cnt[cur] -= 1
+        dfs(root, 0)
+        return ans
+
+    def lowestCommonAncestor(self, root: TreeNode, p: TreeNode, q: TreeNode) -> TreeNode:
+        if not root or p == root or q == root:
+            return root
+        left = self.lowestCommonAncestor(root.left, p, q)
+        right = self.lowestCommonAncestor(root.right, p, q)
+        if left and right:
+            return root
+        return left if left else right
+            
+    def permute(self, nums: List[int]) -> List[List[int]]:
+        self.res = []
+        used = defaultdict(bool)
+        self.path = []
+        def dfs(num:int):
+            if num == len(nums):
+                self.res.append(self.path)
+                return 
+            for i in range(len(nums)):
+                if used[nums[i]]:
+                    continue
+                used[nums[i]] = True
+                self.path.append(nums[i])
+                dfs(num + 1)
+                self.path.pop()
+                used[nums[i]] = False
+        dfs(0)
+        return self.res
+
+    def subsets(self, nums: List[int]) -> List[List[int]]:
+        self.res = []
+        self.path = []
+        def dfs(num:int):
+            tmp = copy.deepcopy(self.path)
+            self.res.append(tmp)
+            if num >= len(nums):
+                return 
+            for i in range(num, len(nums)):
+                self.path.append(nums[i])
+                dfs(i + 1)
+                self.path.pop()
+        dfs(0)
+        return self.res
+
+    def letterCombinations(self, digits: str) -> List[str]:
+        maps = {
+		'2': "abc",
+		'3': "def",
+		'4': "ghi",
+		'5': "jkl",
+		'6': "mno",
+		'7': "pqrs",
+		'8': "tuv",
+		'9': "wxyz",
+        }
+        res = []
+        path = []
+        def dfs(num:int):
+            if num == len(digits):
+                res.append("".join(path))
+                return
+            for i in range(num, len(digits)):
+                digit = digits[i]
+                chars = maps[digit]
+                for char in chars:
+                    path.append(char)
+                    dfs(num + 1)
+                    path.pop()
+        dfs(0)
+        return res
+
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+
+        self.res = [] 
+        self.path = []
+        candidates.sort()
+        start = 0
+        def dfs(start, target, path):
+            if target == 0:
+                self.res.append(copy.deepcopy(self.path))
+                return 
+                if candidates[i] > target:
+            for i in range(start, len(candidates)):
+                    break
+                path.append(candidates[i])
+                dfs(i, target - candidates[i], path)
+                path.pop()
+        dfs(start, target, self.path)
+        return self.res
+
+    def generateParenthesis(self, n: int) -> List[str]:
+        self.res = []
+        path = []
+        def dfs(open:int, close:int):
+            if open == n and close == n:
+                self.res.append("".join(path))
+                return 
+            if open < n:
+                path.append("(")
+                dfs(open + 1, close)
+                path.pop()
+            if close < open:
+                path.append(")")
+                dfs(open, close + 1)
+                path.pop()
+        dfs(0, 0)
+        return self.res
+    
+    def exist(self, board: List[List[str]], word: str) -> bool:
+        n, m = len(board), len(board[0])
+        used = [[False] * m for _ in range(n)]
+        x, y = [], []
+        for i in range(n):
+            for j in range(m):
+                if board[i][j] == word[0]:
+                    x.append(i)
+                    y.append(j)
+        directions = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+        self.flag = False
+        def dfs(start, i, j):
+            if start == len(word):
+                self.flag = True
+                return True
+            for idx in range(4):
+                tmpx = i + directions[idx][0]
+                tmpy = j + directions[idx][1]
+                if tmpx >= 0 and tmpx < n and tmpy >= 0 and tmpy < m and not used[tmpx][tmpy] and board[tmpx][tmpy] == word[start]:
+                    used[tmpx][tmpy] = True
+                    dfs(start + 1, tmpx, tmpy)
+                    used[tmpx][tmpy] = False
+
+        for i in range(len(x)):
+            used[x[i]][y[i]] = True
+            dfs(1, x[i], y[i])
+            if self.flag:
+                return True
+            used[x[i]][y[i]] = False
+        return False
+
+    def partition(self, s: str) -> List[List[str]]:
+        self.res = []
+        self.path = []
+        def huiwen(s):
+            right = len(s) - 1
+            left = 0
+            while left < right:
+                if s[left] != s[right]:
+                    return False
+                left += 1
+                right -= 1
+            return True
+        def dfs(start):
+            if start == len(s):
+                self.res.append(copy.deepcopy(self.path))
+                return 
+            for i in range(start, len(s)):
+                if huiwen(s[start:i+1]):
+                    self.path.append(s[start:i+1])
+                    dfs(i+1)
+                    self.path.pop()
+        dfs(0)
+        return self.res
+
+    
     
 class LRUNode:
     def __init__(self, key, value):
