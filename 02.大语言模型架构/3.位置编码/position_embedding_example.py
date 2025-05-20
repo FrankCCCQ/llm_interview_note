@@ -89,7 +89,7 @@ def apply_rotary_emb(xq: torch.Tensor, xk: torch.Tensor, freqs_cis: torch.Tensor
 
     # 旋转矩阵（freqs_cis）的维度在序列长度（seq_len，维度 1）和头部维度（head_dim，维度 3）上需要与嵌入的维度一致。
     # 此外，freqs_cis 的形状必须与 xq 和 xk 相匹配，因此我们需要将 freqs_cis 的形状从 [max_seq_len, head_dim] 调整为 [1, max_seq_len, 1, head_dim]。
-    freqs_cis = reshape_for_broadcast(freqs_cis, xq_complex) # [max_seq_len, 1, 1, dim // 2]
+    freqs_cis = reshape_for_broadcast(freqs_cis, xq_complex) 
 
     # 应用旋转操作，并将结果转回实数域。# flatten(2) 将后面两个维度压成一个维度
     xq_out = torch.view_as_real(xq_complex * freqs_cis).flatten(3) 

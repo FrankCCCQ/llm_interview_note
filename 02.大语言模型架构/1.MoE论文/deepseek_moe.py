@@ -581,6 +581,8 @@ class Gate(nn.Module):
         if self.n_groups > 1:
             scores = scores.view(x.size(0), self.n_groups, -1)
             if self.bias is None:
+                # scores [batch_size, seq_len, n_groups, expert_per_group],
+                # amax 沿着expert_per_group 取最大值
                 group_scores = scores.amax(dim=-1)
             else:
                 group_scores = scores.topk(2, dim=-1)[0].sum(dim=-1)
